@@ -1,25 +1,32 @@
 #include <Arduino.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
-#include <WiFiMulti.h>
 
 #include "data.h"
 #include "bme.hpp"
 
 const int TimeToSleep = TimeToSleepSeconds * 1000000; /* sleep time converted */
 
-WiFiMulti wifiMulti;
 RTC_DATA_ATTR int bootCount = 0; /* is saved between reboots */
 
-void connectToWifi() {
-  wifiMulti.addAP(SSID.c_str(), Password.c_str());
-
-  for (int i = 0; i < 10 && wifiMulti.run() != WL_CONNECTED; i++) {
+bool connectToWifi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(SSID.c_str(), Password.c_str());
+  delay(1000);
+  
+  int i = 0;
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    i++;
     if (DebugPrints) {
-      Serial.println("Trying to connect to WiFi... " + String(i));
+      Serial.println("Trying to connect to WiFi... " + String(WiFi.status()));
     }
-    delay(5000);
+    delay(1000);
+    if (i > 8) {
+      return false;
+    }
   }
+  return true;
 }
 
 void postToInflux(BmeData bmeData) {
@@ -54,15 +61,20 @@ void setup() {
     Serial.println("Boot number: " + String(bootCount));
   }
 
-  connectToWifi();
+  bool wifiStatus = connectToWifi();
+  if (DebugPrints) {
+    Serial.println("Wifi status " + String(wifiStatus));
+  }
 
-  Bme bme{};
-  bme.Initialize();
-
-  BmeData bmeData = bme.GetData();
+  if (wifiStatus) {
+    Bme bme{};
+    bme.Initialize();
   
-  postToInflux(bmeData);
-
+    BmeData bmeData = bme.GetData();
+ 
+    postToInflux(bmeData);
+  }
+ 
   esp_sleep_enable_timer_wakeup(TimeToSleep);
 
   if (DebugPrints) {
