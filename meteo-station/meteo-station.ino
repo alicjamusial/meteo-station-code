@@ -1,56 +1,61 @@
-#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  15        /* Time ESP32 will go to sleep (in seconds) */
-
+#include "data.h"
 #include <Arduino.h>
-
+#include <HTTPClient.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
 
-#include <HTTPClient.h>
-
-#define USE_SERIAL Serial
-
-
-#define SSID ""
-#define PASSWORD ""
-#define INFLUX ""
-
+const int TimeToSleep = TimeToSleepSeconds * 1000000; /* sleep time converted */
 
 WiFiMulti wifiMulti;
-RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR int bootCount = 0; /* is saved between reboots */
 
+void connectToWifi() {
+  wifiMulti.addAP(SSID.c_str(), Password.c_str());
 
-void setup(){
-  Serial.begin(115200);
-
-  ++bootCount;
-  Serial.println("Boot number: " + String(bootCount));
-
-  wifiMulti.addAP(SSID, PASSWORD);
-
-  for(int i = 0; i < 10 && wifiMulti.run() != WL_CONNECTED; i++) {
-    Serial.println("Trying to connect to WiFi... " + String(i));
-    delay(1000);
+  for (int i = 0; i < 10 && wifiMulti.run() != WL_CONNECTED; i++) {
+    if (DebugPrints) {
+      Serial.println("Trying to connect to WiFi... " + String(i));
+    }
+    delay(200);
   }
+}
 
+void postToInflux() {
   String metrics = "meteo temperature=" + String(23.666, 1) + "," +
                    "pressure=" + String(999.2, 1) + "," +
                    "boot_nr=" + String(bootCount);
 
-  String dburl = INFLUX;
-  Serial.println("Posting to influx");
-  
   HTTPClient http;
-  http.begin(dburl);
-  http.POST(metrics);
+  http.begin(Influx);
+  int status = http.POST(metrics);
 
-  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-  Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
-  Serial.println("Going to sleep now");
-  Serial.flush(); 
+  if (DebugPrints) {
+    Serial.println("Posting to influx, status: " + String(status));
+  }
+}
+
+void setup() {
+
+  ++bootCount;
+
+  if (DebugPrints) {
+    Serial.begin(115200);
+    Serial.println("Boot number: " + String(bootCount));
+  }
+
+  connectToWifi();
+  postToInflux();
+
+  esp_sleep_enable_timer_wakeup(TimeToSleep);
+
+  if (DebugPrints) {
+    Serial.println("ESP32 is going to sleep for " + String(TimeToSleepSeconds) + " seconds");
+    Serial.flush();
+  }
+
   esp_deep_sleep_start();
 }
 
-void loop(){
-  // not needed
+void loop() {
+  // not used
 }
