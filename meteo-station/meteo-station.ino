@@ -43,11 +43,17 @@ void postToInflux(BmeData bmeData) {
   HTTPClient http;
   http.begin(Influx);
 
+  int i = 0;
   int status = 0;
+  
   while (status != 204) {
+    i++;
     status = http.POST(metrics);
     if (DebugPrints) {
       Serial.println("Posting to influx, status: " + String(status));
+    }
+    if (i > 8) {
+      break;
     }
   }
 }
