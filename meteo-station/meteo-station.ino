@@ -4,6 +4,7 @@
 
 #include "data.h"
 #include "bme.hpp"
+#include "bh.hpp"
 
 const int TimeToSleep = TimeToSleepSeconds * 1000000; /* sleep time converted */
 
@@ -29,11 +30,12 @@ bool connectToWifi() {
   return true;
 }
 
-void postToInflux(BmeData bmeData) {
+void postToInflux(BmeData bmeData, float lux) {
   String metrics = "meteo temperature=" + String(bmeData.temperature, 1) + "," +
                    "pressure=" + String(bmeData.pressure, 1) + "," +
                    "altitude=" + String(bmeData.altitude, 1) + "," +
                    "humidity=" + String(bmeData.humidity, 1) + "," +
+                   "lux=" + String(lux, 1) + "," +
                    "boot_nr=" + String(bootCount);
 
   if (DebugPrints) {
@@ -74,11 +76,15 @@ void setup() {
 
   if (wifiStatus) {
     Bme bme{};
-    bme.Initialize();
+    bool bmeStatus = bme.Initialize();
+
+    Bh bh{};
+    bool bhStatus = bh.Initialize();
   
     BmeData bmeData = bme.GetData();
+    float lux = bh.GetLux();
  
-    postToInflux(bmeData);
+    postToInflux(bmeData, lux);
   }
  
   esp_sleep_enable_timer_wakeup(TimeToSleep);
