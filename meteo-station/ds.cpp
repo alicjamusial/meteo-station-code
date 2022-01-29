@@ -9,5 +9,6 @@ bool Ds::Initialize() {
 }
 
 float Ds::GetTemperature() {
+    _ds.requestTemperatures(); 
     return _ds.getTempCByIndex(0);
 }
