@@ -8,6 +8,7 @@
 #include "ds.hpp"
 
 const int TimeToSleep = TimeToSleepSeconds * 1000000; /* sleep time converted */
+const int voltageMeasurementPin = 34;
 
 RTC_DATA_ATTR int bootCount = 0; /* is saved between reboots */
 
@@ -32,12 +33,15 @@ bool connectToWifi() {
 }
 
 void postToInflux(BmeData bmeData, float lux, float tempDs) {
+  int voltage = analogRead(voltageMeasurementPin);
+  
   String metrics = "meteo temperature=" + String(bmeData.temperature, 1) + "," +
                    "pressure=" + String(bmeData.pressure, 1) + "," +
                    "altitude=" + String(bmeData.altitude, 1) + "," +
                    "humidity=" + String(bmeData.humidity, 1) + "," +
                    "lux=" + String(lux, 1) + "," +
                    "temperature_ds=" + String(tempDs, 1) + "," +
+                   "voltage_raw=" + String(voltage) + "," +
                    "boot_nr=" + String(bootCount);
 
   if (DebugPrints) {
