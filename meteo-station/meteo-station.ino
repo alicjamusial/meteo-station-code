@@ -10,6 +10,10 @@
 #include "ds.hpp"
 
 const int TimeToSleep = TimeToSleepSeconds * 1000000; /* sleep time converted */
+const int TimeToSleep2 = 120 * 1000000; /* sleep time converted */
+
+
+const int ledPin = 2;
 
 const uint32_t ReferenceVoltage = 1100;
 const int VoltageMeasurementPin = 34;
@@ -44,6 +48,7 @@ bool connectToWifi() {
       return false;
     }
   }
+  WiFi.setSleep(true);
   return true;
 }
 
@@ -86,43 +91,68 @@ void setup() {
 
   ++bootCount;
 
-  if (DebugPrints) {
-    Serial.begin(115200);
-    Serial.println("Boot number: " + String(bootCount));
-  }
+  setCpuFrequencyMhz(80);
 
-  bool wifiStatus = connectToWifi();
-  if (DebugPrints) {
-    Serial.println("Wifi status " + String(wifiStatus));
-  }
-  
+  delay(1000);
   setupAdc();
-
-  if (wifiStatus) {
-    Bme bme{};
-    bool bmeStatus = bme.Initialize();
-
-    Bh bh{};
-    bool bhStatus = bh.Initialize();
-
-    Ds ds{};
-    bool dsStatus = ds.Initialize();
+  uint32_t voltage;
+  esp_adc_cal_get_voltage(VoltageChannel, &VoltageCharacteristics, &voltage);
   
-    BmeData bmeData = bme.GetData();
-    float lux = bh.GetLux();
-    float tempDs = ds.GetTemperature();
- 
-    postToInflux(bmeData, lux, tempDs);
-  }
- 
-  esp_sleep_enable_timer_wakeup(TimeToSleep);
+  Serial.begin(115200);
+  Serial.println("AAAA");
+  Serial.println(voltage / 1000.0 * 2);
+   Serial.println("Freq: " + String(getCpuFrequencyMhz()));
+    
+//  if (voltage / 1000.0 * 2 > 2.6)
+//  {
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, HIGH);
+  
+    if (DebugPrints) {
+      Serial.println("Boot number: " + String(bootCount));
+    }
+  
+    bool wifiStatus = connectToWifi();
+    if (DebugPrints) {
+      Serial.println("Wifi status " + String(wifiStatus));
+    }
+  
+    if (wifiStatus) {
+      Bme bme{};
+      bool bmeStatus = bme.Initialize();
+  
+      Bh bh{};
+      bool bhStatus = bh.Initialize();
+  
+      Ds ds{};
+      bool dsStatus = ds.Initialize();
+    
+      BmeData bmeData = bme.GetData();
+      float lux = bh.GetLux();
+      float tempDs = ds.GetTemperature();
+   
+      postToInflux(bmeData, lux, tempDs);
+    }
 
-  if (DebugPrints) {
-    Serial.println("ESP32 is going to sleep for " + String(TimeToSleepSeconds) + " seconds");
-    Serial.flush();
-  }
-
-  esp_deep_sleep_start();
+    adc_power_off();
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    esp_sleep_enable_timer_wakeup(TimeToSleep);
+  
+    if (DebugPrints) {
+      Serial.println("ESP32 is going to sleep for " + String(TimeToSleepSeconds) + " seconds");
+      Serial.flush();
+    }
+  
+    esp_deep_sleep_start();
+//  }
+//  else {
+//   
+//    esp_sleep_enable_timer_wakeup(TimeToSleep2);
+//    Serial.flush();
+//    esp_deep_sleep_start();
+//  }
+  
 }
 
 void loop() {
