@@ -111,32 +111,44 @@ void setup() {
     if (DebugPrints) {
       Serial.println("Boot number: " + String(bootCount));
     }
-  
-    bool wifiStatus = connectToWifi();
-    if (DebugPrints) {
-      Serial.println("Wifi status " + String(wifiStatus));
-    }
-  
-    if (wifiStatus) {
-      Bme bme{};
-      bool bmeStatus = bme.Initialize();
-  
-      Bh bh{};
-      bool bhStatus = bh.Initialize();
-  
-      Ds ds{};
-      bool dsStatus = ds.Initialize();
-    
-      BmeData bmeData = bme.GetData();
-      float lux = bh.GetLux();
-      float tempDs = ds.GetTemperature();
-   
-      postToInflux(bmeData, lux, tempDs);
-    }
-
+//  
+//    bool wifiStatus = connectToWifi();
+//    if (DebugPrints) {
+//      Serial.println("Wifi status " + String(wifiStatus));
+//    }
+//  
+//////    if (wifiStatus) {
+////      Bme bme{};
+////      bool bmeStatus = bme.Initialize();
+////  
+////      Bh bh{};
+////      bool bhStatus = bh.Initialize();
+////  
+////      Ds ds{};
+////      bool dsStatus = ds.Initialize();
+////    
+////      BmeData bmeData = bme.GetData();
+////      float lux = bh.GetLux();
+////      float tempDs = ds.GetTemperature();
+//
+//      BmeData bmeData;
+//      bmeData.temperature = 12.5;
+//      bmeData.pressure = 1015.1;
+//      bmeData.altitude = 200.0;
+//      bmeData.humidity = 33.1;
+//      float lux = 1111;
+//      float tempDs = 15.4;
+//   
+//      postToInflux(bmeData, lux, tempDs);
+////    }
+//
     adc_power_off();
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
+//    WiFi.disconnect(true);
+//    WiFi.mode(WIFI_OFF);
+    
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
     esp_sleep_enable_timer_wakeup(TimeToSleep);
   
     if (DebugPrints) {
