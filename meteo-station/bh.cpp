@@ -3,9 +3,9 @@
 
 #include "bh.hpp"
 
-bool Bh::Initialize() {  
-  Wire.begin();
-  return _lightMeter.begin();
+bool Bh::Initialize() {
+    Wire.begin();
+    return _lightMeter.begin();
 }
 
 float Bh::GetLux() {

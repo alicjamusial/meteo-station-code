@@ -1,13 +1,15 @@
 #pragma once
+
 #include <Arduino.h>
 #include <BH1750.h>
 #include <Wire.h>
 
 class Bh {
-  public:
+public:
     bool Initialize();
+
     float GetLux();
 
-  private:
+private:
     BH1750 _lightMeter;
 };

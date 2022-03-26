@@ -3,12 +3,12 @@
 
 #include "ds.hpp"
 
-bool Ds::Initialize() {  
-  _ds.begin();
-  return true;
+bool Ds::Initialize() {
+    _ds.begin();
+    return true;
 }
 
 float Ds::GetTemperature() {
-    _ds.requestTemperatures(); 
+    _ds.requestTemperatures();
     return _ds.getTempCByIndex(0);
 }

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Arduino.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -11,17 +12,18 @@
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 struct BmeData {
-  float temperature;
-  float pressure;
-  float altitude;
-  float humidity;
+    float temperature;
+    float pressure;
+    float altitude;
+    float humidity;
 };
 
 class Bme {
-  public:
+public:
     bool Initialize();
+
     BmeData GetData();
 
-  private:
+private:
     Adafruit_BME280 _bme; // I2C
 };
