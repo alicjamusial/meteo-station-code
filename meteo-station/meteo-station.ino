@@ -9,8 +9,6 @@
 #include "bh.hpp"
 #include "ds.hpp"
 
-#define BME_SCK 13
-
 // Converted time from configuration
 const int TimeToSleep = TimeToSleepSeconds * 1000000;
 const int TimeToSleepIfLowBattery = TimeToSleepSecondsIfBatteryLow * 1000000;
@@ -99,7 +97,7 @@ void setup() {
     uint32_t voltage;
     esp_adc_cal_get_voltage(VoltageChannel, &VoltageCharacteristics, &voltage);
 
-    if (convertVoltage(voltage) > MinimumBatteryVoltage) {
+    if (convertVoltage(voltage) > MinimumBatteryVoltage || IsDebug) {
 
         if (IsDebug) {
             Serial.begin(115200);
@@ -126,17 +124,9 @@ void setup() {
             float lux = bh.GetLux();
             float tempDs = ds.GetTemperature();
 
-//      BmeData bmeData;
-//      bmeData.temperature = 12.5;
-//      bmeData.pressure = 1015.1;
-//      bmeData.altitude = 200.0;
-//      bmeData.humidity = 33.1;
-//      float lux = 1111;
-//      float tempDs = 15.4;
-
             postToInflux(bmeData, lux, tempDs, voltage);
         }
-//
+
         adc_power_off();
         WiFi.disconnect(true);
         WiFi.mode(WIFI_OFF);
