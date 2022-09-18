@@ -22,16 +22,26 @@ The code was written using **Arduino IDE**. It was meant to be quick and clear, 
 I was inspired by solution created by [this guy on Instructables](https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/). He did a good job, so I strongly recommand exploring his meteo projects!
 
 ### ◾ How to run this code?
-1. 
+1. Install Arduino IDE.
+2. Add ESP32 board to Arduino IDE [as it is described e.g. here](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/).
+3. Install needed libraries - `OneWire`, `BH1750`, `Adafruit_BME280`, `DallasTemperature` etc.
+4. Copy `data-example.h` and rename it to `data.h`. Uncomment all lines and fill it with your values:
+   - SSID - your WiFi name,
+   - Password = your WiFi password,
+   - Influx =  fill `[IP_ADDRESS]` and `[DB-NAME]` fields with your Influx instance data (see next paragraph "Server setup").
+5. Check if your ESP32 connects to WiFi and sends data to Influx properly. If you set `IsDebug` to `True` you will see additional debugging logs via UART.
 
 
 ### ◾ Server setup
 
-- 
+1. Install Influx on the Raspberry Pi or other computer that you use as a local server. This code works with Influx v. 1.8.
+2. Set up Influx to be always running on port 8086 (or change the port in the `data.h`').
+3. Create a database for the data.
+4. That's all 😊 The ESP32 should connect to it (after filling up `data.h`) and send all the information to the created database. I recommend Grafana to preview all charts real-time.
 
 
 ### ◾ Adjust it to your needs!
-This is an absolutely hobbyst project :) You can use it as a reference to create something loads better.
+This is an absolutely hobbyst project :) You can use it as a reference to create something a lot better.
 
 
 ### ◾ License
